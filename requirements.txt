@@ -1,0 +1,6 @@
+langchain_community
+pypdf==6.6.2
+fastapi
+sentence-transformers
+langchain-pinecone
+-e .
