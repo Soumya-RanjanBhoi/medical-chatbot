@@ -1,16 +1,30 @@
-from fastapi import FastAPI
-from langchain_core.messages import HumanMessage,AIMessage
-from langchain_classic.prompts import ChatPromptTemplate,PromptTemplate
-from src.helper import template
-from langchain_mistralai import ChatMistralAI
+from fastapi import FastAPI, Cookie, Response
+from typing import Optional
+from src.pipeline.main_pipeline import MainPipeline,UserManager
+app = FastAPI()
+
+pipeline = MainPipeline(directory="data", index_name="index")
+user_manager = UserManager()
+
+@app.post("/start")
+def start_session(response: Response):
+    user_no = user_manager.new_user()
+    response.set_cookie(key="user_no", value=str(user_no), httponly=True)
+    return {"user_no": user_no}
 
 
-app= FastAPI()
-llm = ChatMistralAI(model="mistral-large-latest",temperature=0.7,max_retries=2)
+@app.post("/chat")
+def chat(
+    question: str,
+    user_no: Optional[str] = Cookie(default=None)):
 
+    if user_no is None:
+        return {"error": "Session not started"}
 
-@app.post('/query')
-async def ask_question(query:str):
+    answer = pipeline.query(
+        query=question,
+        user_id=int(user_no))
     
 
+    return {"answer": answer}
 

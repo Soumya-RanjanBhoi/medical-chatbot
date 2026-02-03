@@ -22,7 +22,7 @@ class initializePinecone:
         try:
             self.pc=Pinecone()
             logging.info('successfully loggined into pinecone')
-            self.embedding_model=MistralAIEmbeddings(model='mistral-embbed')
+            self.embedding_model = MistralAIEmbeddings(model="mistral-embed")
             logging.info('Embedding Model ready')
             
         except Exception as e:
@@ -31,18 +31,25 @@ class initializePinecone:
     
     def logging(self):
         try:
-            if self.index_name not in [i['names'] for i in self.pc.list_names()]:
+            existing_indexes = self.pc.list_indexes().names()
+
+            if self.index_name not in existing_indexes:
                 self.pc.create_index(
                     name=self.index_name,
                     dimension=1024,
-                    metric='dotproduct',
-                    spec=ServerlessSpec(cloud='aws',region='us-east-1')
+                    metric="dotproduct",
+                    spec=ServerlessSpec(
+                        cloud="aws",
+                        region="us-east-1"
+                    )
                 )
-                logging.info('Logging Created index in Pinecone')
+                logging.info("Created Pinecone index")
             else:
-                logging.info('index name already exists')
+                logging.info("Pinecone index already exists")
+
         except Exception as e:
-            raise CustomException(e,sys)
+            raise CustomException(e, sys)
+
         
 
     def create_vectorstore(self):
@@ -62,25 +69,24 @@ class initializePinecone:
         logging.info('vector store created')
 
     
-    def create_retreiver(self):
+    def create_retriever(self):
         self.create_vectorstore()
 
         if self.vectorstore is None:
-            logging.info('vector store not created successfully')
-            raise 
+            raise RuntimeError("Vectorstore was not created")
 
         self.retriever = self.vectorstore.as_retriever(
             search_type="mmr",
             search_kwargs={
-                    "k": 5,
-                    "fetch_k": 20,
-                    "lambda_mult": 0.5
-                }
-            )
-        if self.retreiver is None:
-            logging.info('retriever not created successfully')
-            raise
+                "k": 5,
+                "fetch_k": 20,
+                "lambda_mult": 0.5
+            }
+        )
 
-        
-        return self.retreiver
+        if self.retriever is None:
+            raise RuntimeError("Retriever was not created")
+
+        return self.retriever
+
         
