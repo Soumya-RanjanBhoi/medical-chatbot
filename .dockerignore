@@ -1,0 +1,9 @@
+__pycache__/
+.egg
+medical_chatbot.egg-info/
+myenv/
+research/
+.gitignore
+template.sh
+setup.py 
+test.py

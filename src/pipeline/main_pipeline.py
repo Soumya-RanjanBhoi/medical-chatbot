@@ -5,7 +5,7 @@ from src.exception import CustomException
 from src.helper import template
 from dotenv import load_dotenv
 from langchain_mistralai import ChatMistralAI
-from langchain_core.prompts import ChatPromptTemplate 
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder 
 from langchain_classic.memory import ConversationSummaryBufferMemory,ConversationBufferMemory
 from langchain_classic.chains import LLMChain
 from langchain_community.chat_message_histories import RedisChatMessageHistory
@@ -53,7 +53,7 @@ class MainPipeline(initializePinecone):
 
         self.prompt_template = ChatPromptTemplate.from_messages([
             ("system", template),
-            ("system", "{history}"),
+            MessagesPlaceholder(variable_name="history"),
             ("human", "Context:\n{context}\n\nQuestion:\n{question}")
         ])
 
@@ -77,7 +77,8 @@ class MainPipeline(initializePinecone):
             chat_memory=message_history,
             max_token_limit=1500,
             return_messages=True,
-            input_key="question"
+            input_key="question",
+            memory_key="history"
         )
 
         chain = LLMChain(

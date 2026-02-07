@@ -53,20 +53,33 @@ class initializePinecone:
         
 
     def create_vectorstore(self):
-        obj=ProcessPipeline(directory=self.directory)
-
-        final_doc=obj.start_process()
-
         self.logging()
+        
+        try:
+            index = self.pc.Index(self.index_name)
+            stats = index.describe_index_stats()
+            
+            if stats['total_vector_count'] > 0:
+                logging.info(f"Index {self.index_name} already exists and is populated. Loading existing vector store.")
+                self.vectorstore = PineconeVectorStore.from_existing_index(
+                    index_name=self.index_name,
+                    embedding=self.embedding_model,
+                    text_key='text'
+                )
+            else:
+                logging.info(f"Index {self.index_name} is empty. Processing documents.")
+                obj=ProcessPipeline(directory=self.directory)
+                final_doc=obj.start_process()
 
-        self.vectorstore= PineconeVectorStore.from_documents(
-            documents=final_doc,
-            embedding=self.embedding_model,
-            index_name=self.index_name,
-            text_key='text'
-        )
-
-        logging.info('vector store created')
+                self.vectorstore= PineconeVectorStore.from_documents(
+                    documents=final_doc,
+                    embedding=self.embedding_model,
+                    index_name=self.index_name,
+                    text_key='text'
+                )
+                logging.info('vector store created')
+        except Exception as e:
+            raise CustomException(e, sys)
 
     
     def create_retriever(self):
@@ -78,14 +91,16 @@ class initializePinecone:
         self.retriever = self.vectorstore.as_retriever(
             search_type="mmr",
             search_kwargs={
-                "k": 5,
-                "fetch_k": 20,
+                "k": 10,
+                "fetch_k": 25,
                 "lambda_mult": 0.5
             }
         )
 
         if self.retriever is None:
             raise RuntimeError("Retriever was not created")
+        else:
+            logging.info('Retriever ready')
 
         return self.retriever
 
