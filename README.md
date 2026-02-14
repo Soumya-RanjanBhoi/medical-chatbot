@@ -220,21 +220,8 @@ Key files:
 ## Security & Privacy
 
 - The assistant prompt (`src/helper.py`) includes strict safety rules: it will avoid diagnoses and speculative answers. Do not rely on this system for medical diagnoses — it is for informational assistance based only on the provided documents.
-- Do not commit `.env` or any secrets to the repository.
 - Be mindful of usage costs for LLM and embedding APIs.
 
----
-
-## Contributing
-
-Contributions are welcome. Suggested workflow:
-1. Fork the repo
-2. Make changes in a feature branch
-3. Open a pull request with a clear description of changes
-
-Please include tests and update the README for any behavioral changes.
-
----
 
 ## License
 
@@ -248,15 +235,5 @@ This repository does not currently include a license file. Add an appropriate op
   ```
   curl http://localhost:8080/health
   ```
-- Inspect logs directory:
-  ```
-  ls -R logs || echo "No logs created yet"
-  tail -n 200 logs/<most_recent_log_file>
-  ```
 
 ---
-
-If you'd like, I can:
-- Add an example Postman collection for the API endpoints
-- Add a script to force reindexing or to precompute embeddings locally
-- Create a minimal test suite for the API
